@@ -1,65 +1,87 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { SERVICES_DATA } from '../data/servicesData';
 
-export function useBooking() {
-  const [services] = useState(SERVICES_DATA);
-  const [selectedService, setSelectedService] = useState(null);
-  const [clientInfo, setClientInfo] = useState({ name: '', email: '', date: '' });
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+const INITIAL_CLIENT_INFO = {
+  name: '',
+  email: '',
+  date: '',
+};
 
-  // Оптимизирано филтриране на услугите с useMemo
+export function useBooking() {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedService, setSelectedService] = useState(null);
+  const [clientInfo, setClientInfo] = useState(INITIAL_CLIENT_INFO);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [bookings, setBookings] = useState([]);
+
   const filteredServices = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
-    if (!query) return services;
-    return services.filter(
+    if (!query) return SERVICES_DATA;
+
+    return SERVICES_DATA.filter(
       (service) =>
         service.title.toLowerCase().includes(query) ||
         service.description.toLowerCase().includes(query)
     );
-  }, [services, searchQuery]);
+  }, [searchQuery]);
 
-  // Избор на услуга
   const handleSelectService = useCallback((service) => {
     setSelectedService(service);
     setIsSubmitted(false);
   }, []);
 
-  // Промяна на полетата за клиента
   const handleInputChange = useCallback((e) => {
     const { name, value } = e.target;
-    setClientInfo((prev) => ({ ...prev, [name]: value }));
+    setClientInfo((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   }, []);
 
-  // Потвърждение на резервацията
   const handleSubmitBooking = useCallback(
     (e) => {
       e.preventDefault();
-      if (!selectedService || !clientInfo.name || !clientInfo.email || !clientInfo.date) {
-        return;
-      }
+      if (!selectedService) return;
+
+      const newBooking = {
+        id: Date.now(),
+        serviceId: selectedService.id,
+        serviceTitle: selectedService.title,
+        price: selectedService.price,
+        duration: selectedService.duration,
+        name: clientInfo.name,
+        email: clientInfo.email,
+        date: clientInfo.date,
+      };
+
+      setBookings((prev) => [...prev, newBooking]);
       setIsSubmitted(true);
     },
     [selectedService, clientInfo]
   );
 
-  // Нулиране на форма
-  const resetBooking = useCallback(() => {
+  const handleResetBooking = useCallback(() => {
     setSelectedService(null);
-    setClientInfo({ name: '', email: '', date: '' });
+    setClientInfo(INITIAL_CLIENT_INFO);
     setIsSubmitted(false);
   }, []);
 
+  const handleCancelBooking = useCallback((bookingId) => {
+    setBookings((prev) => prev.filter((booking) => booking.id !== bookingId));
+  }, []);
+
   return {
-    services: filteredServices,
+    searchQuery,
+    setSearchQuery,
+    filteredServices,
     selectedService,
     clientInfo,
     isSubmitted,
-    searchQuery,
-    setSearchQuery,
+    bookings,
     handleSelectService,
     handleInputChange,
     handleSubmitBooking,
-    resetBooking,
+    handleResetBooking,
+    handleCancelBooking,
   };
 }
