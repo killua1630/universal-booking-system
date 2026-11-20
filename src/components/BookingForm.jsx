@@ -1,9 +1,12 @@
+import DatePickerCalendar from './DatePickerCalendar';
 export default function BookingForm({
   selectedService,
   clientInfo,
   isSubmitted,
   bookings = [],
+  bookedDates = [],
   onInputChange,
+  onDateSelect,
   onSubmit,
   onReset,
   onCancelBooking,
@@ -25,6 +28,7 @@ export default function BookingForm({
           </p>
           <p>Клиент: {clientInfo.name}</p>
           <p>Имейл: {clientInfo.email}</p>
+          <p>Телефон: {clientInfo.phone}</p>
           <p>Дата: {clientInfo.date}</p>
           <div className="form-actions">
             <button type="button" className="btn-primary" onClick={onReset}>
@@ -67,15 +71,26 @@ export default function BookingForm({
             </label>
 
             <label>
-              Дата на посещение
+              Телефонен номер
               <input
-                type="date"
-                name="date"
-                value={clientInfo.date}
+                type="tel"
+                name="phone"
+                placeholder="+359 88 123 4567"
+                value={clientInfo.phone}
                 onChange={onInputChange}
                 required
               />
             </label>
+
+            <div className="form-field-block">
+              <span className="field-label-text">Дата на посещение (до края на 2026 г.)</span>
+              <DatePickerCalendar
+                value={clientInfo.date}
+                onChange={onDateSelect}
+                bookedDates={bookedDates}
+                maxYear={2026}
+              />
+            </div>
 
             <div className="form-actions">
               <button type="submit" className="btn-primary">
@@ -98,7 +113,7 @@ export default function BookingForm({
                 <div>
                   <strong>{booking.serviceTitle}</strong> — {booking.date}
                   <div className="booking-meta">
-                    {booking.name} ({booking.email}) · {booking.price} лв.
+                    {booking.name} ({booking.email}) · Тел.: {booking.phone} · {booking.price} лв.
                   </div>
                 </div>
                 <button
