@@ -1,9 +1,9 @@
-
 import { useState, useMemo, useEffect } from 'react';
 import { businessData } from './data/businessData';
 import { initialReservations } from './data/reservations';
 import { generateAvailableSlots } from './utils/availability';
 import BusinessSettings from './BusinessSettings';
+import BusinessOverview from './BusinessOverview';
 import './App.css';
 
 function getTodayLocalDate() {
@@ -428,6 +428,13 @@ function App() {
               business={currentBusiness}
               reservations={reservations}
               onUpdate={handleUpdateBusiness}
+            />
+
+            <BusinessOverview
+              businessKey={selectedBusiness}
+              business={currentBusiness}
+              reservations={reservations}
+              date={selectedDate}
             />
 
             <h3>Изберете дата:</h3>

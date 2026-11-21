@@ -304,3 +304,91 @@ header p {
     width: 100%;
   }
 }
+
+/* Табло за статистика и заетост */
+
+.business-overview {
+  margin-top: 30px;
+  padding: 22px;
+  max-width: 900px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  background-color: #f9fafb;
+}
+
+.business-overview h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+.overview-date {
+  color: #555;
+  margin-bottom: 20px;
+}
+
+.overview-cards {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(130px, 1fr));
+  gap: 12px;
+}
+
+.overview-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: white;
+}
+
+.overview-card span {
+  color: #555;
+  font-size: 14px;
+}
+
+.overview-card strong {
+  font-size: 26px;
+  color: #2563eb;
+}
+
+.overview-total {
+  margin-top: 18px;
+  padding: 12px;
+  border-radius: 8px;
+  background-color: white;
+}
+
+.resource-statistics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.resource-statistics-card {
+  padding: 16px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: white;
+}
+
+.resource-statistics-card h5 {
+  margin-top: 0;
+  margin-bottom: 12px;
+  font-size: 17px;
+}
+
+.resource-statistics-card p {
+  margin: 8px 0;
+}
+
+@media (max-width: 650px) {
+  .overview-cards {
+    grid-template-columns: repeat(2, minmax(120px, 1fr));
+  }
+
+  .resource-statistics {
+    grid-template-columns: 1fr;
+  }
+}
+
