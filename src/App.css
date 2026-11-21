@@ -187,3 +187,120 @@ header p {
 .edit-actions .cancel-edit-button {
   background-color: #6b7280;
 }
+
+/* Управление на бизнес конфигурацията */
+
+.business-settings {
+  margin-top: 30px;
+  padding: 22px;
+  max-width: 650px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  background-color: #f9fafb;
+}
+
+.business-settings h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
+}
+
+.business-settings h4 {
+  margin-top: 24px;
+  margin-bottom: 12px;
+}
+
+.resource-settings-item {
+  padding: 12px;
+  margin-bottom: 10px;
+  border: 1px solid #ddd;
+  border-radius: 7px;
+  background-color: white;
+}
+
+.resource-settings-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.resource-settings-row button,
+.resource-edit-fields button,
+.settings-form button {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 5px;
+  background-color: #2563eb;
+  color: white;
+  cursor: pointer;
+}
+
+.resource-settings-row button:hover,
+.resource-edit-fields button:hover,
+.settings-form button:hover {
+  background-color: #1d4ed8;
+}
+
+.resource-settings-row .settings-delete-button {
+  margin-left: 8px;
+  background-color: #dc2626;
+}
+
+.resource-settings-row .settings-delete-button:hover {
+  background-color: #b91c1c;
+}
+
+.resource-edit-fields,
+.settings-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.resource-edit-fields label,
+.settings-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.resource-edit-fields input,
+.settings-form input {
+  width: 100%;
+  max-width: 350px;
+  box-sizing: border-box;
+}
+
+.resource-edit-fields .settings-secondary-button {
+  background-color: #6b7280;
+}
+
+.settings-message {
+  margin-top: 18px;
+  font-weight: bold;
+  color: #166534;
+}
+
+@media (max-width: 600px) {
+  .app {
+    padding: 20px 12px;
+  }
+
+  .business-settings {
+    padding: 15px;
+  }
+
+  .resource-settings-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .business-options {
+    flex-direction: column;
+  }
+
+  .business-options button {
+    width: 100%;
+  }
+}

@@ -3,9 +3,9 @@ import { useState, useMemo, useEffect } from 'react';
 import { businessData } from './data/businessData';
 import { initialReservations } from './data/reservations';
 import { generateAvailableSlots } from './utils/availability';
+import BusinessSettings from './BusinessSettings';
 import './App.css';
 
-// Връща днешната дата в локален формат
 function getTodayLocalDate() {
   const today = new Date();
   const year = today.getFullYear();
@@ -15,26 +15,17 @@ function getTodayLocalDate() {
   return `${year}-${month}-${day}`;
 }
 
-// Проверява дали даден час вече е минал
 function isSlotInPast(date, startTime) {
   const today = getTodayLocalDate();
 
-  if (date < today) {
-    return true;
-  }
-
-  if (date > today) {
-    return false;
-  }
+  if (date < today) return true;
+  if (date > today) return false;
 
   const now = new Date();
-  const currentMinutes =
-    now.getHours() * 60 + now.getMinutes();
-
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
   const [hours, minutes] = startTime.split(':').map(Number);
-  const slotStartMinutes = hours * 60 + minutes;
 
-  return slotStartMinutes <= currentMinutes;
+  return hours * 60 + minutes <= currentMinutes;
 }
 
 function App() {
@@ -44,7 +35,31 @@ function App() {
   const [customerName, setCustomerName] = useState('');
   const [participantCount, setParticipantCount] = useState('1');
 
-  // Зареждане на резервациите от localStorage
+  const [businessConfig, setBusinessConfig] = useState(() => {
+    try {
+      const savedConfig = localStorage.getItem(
+        'booking-system-business-config'
+      );
+
+      if (savedConfig) {
+        const parsedConfig = JSON.parse(savedConfig);
+
+        if (
+          parsedConfig &&
+          parsedConfig.medical &&
+          parsedConfig.salon &&
+          parsedConfig.hall
+        ) {
+          return parsedConfig;
+        }
+      }
+    } catch (error) {
+      console.error('Грешка при зареждане на конфигурациите:', error);
+    }
+
+    return businessData;
+  });
+
   const [reservations, setReservations] = useState(() => {
     try {
       const savedReservations = localStorage.getItem(
@@ -59,7 +74,7 @@ function App() {
         }
       }
     } catch (error) {
-      console.error('Грешка при зареждане:', error);
+      console.error('Грешка при зареждане на резервациите:', error);
     }
 
     return initialReservations;
@@ -74,7 +89,7 @@ function App() {
   const [editStartTime, setEditStartTime] = useState('');
   const [editParticipantCount, setEditParticipantCount] = useState('1');
 
-  // Автоматично запазване на резервациите
+  // Запазване на резервациите
   useEffect(() => {
     try {
       localStorage.setItem(
@@ -82,38 +97,68 @@ function App() {
         JSON.stringify(reservations)
       );
     } catch (error) {
-      console.error('Грешка при запазване:', error);
+      console.error('Грешка при запазване на резервациите:', error);
     }
   }, [reservations]);
 
-  const currentBusiness = businessData[selectedBusiness];
+  // Запазване на бизнес конфигурациите
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        'booking-system-business-config',
+        JSON.stringify(businessConfig)
+      );
+    } catch (error) {
+      console.error('Грешка при запазване на конфигурациите:', error);
+    }
+  }, [businessConfig]);
 
-  // Намиране на избрания ресурс
+  const currentBusiness = businessConfig[selectedBusiness];
+
   const currentResource = currentBusiness?.resources.find(
     (resource) => resource.id === Number(selectedResource)
   );
 
-  // Капацитет на избрания ресурс
   const currentCapacity = currentResource?.capacity ?? 1;
 
-  // Намиране на ресурса при редактиране
   const editingResource = currentBusiness?.resources.find(
     (resource) => resource.id === Number(editResource)
   );
 
   const editingCapacity = editingResource?.capacity ?? 1;
 
+  // Ако избраният ресурс бъде премахнат, избира първия наличен ресурс
+  useEffect(() => {
+    if (!currentBusiness) return;
+
+    const resourceStillExists = currentBusiness.resources.some(
+      (resource) => resource.id === Number(selectedResource)
+    );
+
+    if (!resourceStillExists && currentBusiness.resources.length > 0) {
+      setSelectedResource(String(currentBusiness.resources[0].id));
+    }
+  }, [currentBusiness, selectedResource]);
+
   function handleBusinessChange(business) {
     setSelectedBusiness(business);
     setSelectedResource(
-      String(businessData[business].resources[0].id)
+      String(businessConfig[business].resources[0].id)
     );
     setParticipantCount('1');
     setMessage('');
     setEditingId(null);
   }
 
-  // Филтриране на активните резервации
+  function handleUpdateBusiness(updatedBusiness) {
+    setBusinessConfig((previous) => ({
+      ...previous,
+      [selectedBusiness]: updatedBusiness,
+    }));
+
+    setMessage('');
+  }
+
   const filteredReservations = useMemo(() => {
     return reservations.filter(
       (reservation) =>
@@ -129,7 +174,6 @@ function App() {
     selectedResource,
   ]);
 
-  // Генериране на свободните часове
   const availableSlots = useMemo(() => {
     if (!currentBusiness || !selectedResource) {
       return [];
@@ -151,7 +195,6 @@ function App() {
     return hours * 60 + minutes;
   }
 
-  // Създаване на резервация
   function handleBooking(slot) {
     const numberOfParticipants = Number(participantCount);
 
@@ -211,17 +254,12 @@ function App() {
       status: 'active',
     };
 
-    setReservations((previous) => [
-      ...previous,
-      newReservation,
-    ]);
-
+    setReservations((previous) => [...previous, newReservation]);
     setCustomerName('');
     setParticipantCount('1');
     setMessage('Резервацията е създадена успешно!');
   }
 
-  // Отказване на резервация
   function handleCancel(reservationId) {
     setReservations((previous) =>
       previous.map((reservation) =>
@@ -238,7 +276,6 @@ function App() {
     setMessage('Резервацията е отказана успешно!');
   }
 
-  // Започване на редактиране
   function handleEdit(reservation) {
     setEditingId(reservation.id);
     setEditName(reservation.customerName);
@@ -251,7 +288,6 @@ function App() {
     setMessage('');
   }
 
-  // Филтриране на резервациите при редактиране
   const editingReservations = useMemo(() => {
     return reservations.filter(
       (reservation) =>
@@ -269,7 +305,6 @@ function App() {
     editResource,
   ]);
 
-  // Генериране на свободните часове при редактиране
   const editingSlots = useMemo(() => {
     if (!currentBusiness || !editDate || !editResource) {
       return [];
@@ -287,7 +322,6 @@ function App() {
     editingReservations,
   ]);
 
-  // Запазване на редактирана резервация
   function handleSaveEdit() {
     const numberOfParticipants = Number(editParticipantCount);
 
@@ -317,9 +351,7 @@ function App() {
     }
 
     const selectedSlot = editingSlots.find(
-      (slot) =>
-        slot.startTime === editStartTime &&
-        slot.available
+      (slot) => slot.startTime === editStartTime && slot.available
     );
 
     if (!selectedSlot) {
@@ -350,7 +382,6 @@ function App() {
 
     setSelectedDate(editDate);
     setSelectedResource(editResource);
-
     setEditingId(null);
     setMessage('Резервацията е променена успешно!');
   }
@@ -391,21 +422,29 @@ function App() {
               {currentBusiness.slotDuration} минути
             </p>
 
+            <BusinessSettings
+              key={selectedBusiness}
+              businessKey={selectedBusiness}
+              business={currentBusiness}
+              reservations={reservations}
+              onUpdate={handleUpdateBusiness}
+            />
+
             <h3>Изберете дата:</h3>
 
             <input
               type="date"
               min={getTodayLocalDate()}
               value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
+              onChange={(event) => setSelectedDate(event.target.value)}
             />
 
             <h3>Изберете ресурс:</h3>
 
             <select
               value={selectedResource}
-              onChange={(e) => {
-                setSelectedResource(e.target.value);
+              onChange={(event) => {
+                setSelectedResource(event.target.value);
                 setParticipantCount('1');
               }}
             >
@@ -428,7 +467,7 @@ function App() {
               type="text"
               placeholder="Въведете име"
               value={customerName}
-              onChange={(e) => setCustomerName(e.target.value)}
+              onChange={(event) => setCustomerName(event.target.value)}
             />
 
             <h3>Брой участници:</h3>
@@ -438,12 +477,12 @@ function App() {
               min="1"
               max={currentCapacity}
               value={participantCount}
-              onChange={(e) => setParticipantCount(e.target.value)}
+              onChange={(event) =>
+                setParticipantCount(event.target.value)
+              }
             />
 
-            <p>
-              Максимален брой участници: {currentCapacity}
-            </p>
+            <p>Максимален брой участници: {currentCapacity}</p>
 
             <h3>Свободни часове:</h3>
 
@@ -521,7 +560,7 @@ function App() {
                 <input
                   type="text"
                   value={editName}
-                  onChange={(e) => setEditName(e.target.value)}
+                  onChange={(event) => setEditName(event.target.value)}
                 />
 
                 <label>Дата:</label>
@@ -530,8 +569,8 @@ function App() {
                   type="date"
                   min={getTodayLocalDate()}
                   value={editDate}
-                  onChange={(e) => {
-                    setEditDate(e.target.value);
+                  onChange={(event) => {
+                    setEditDate(event.target.value);
                     setEditStartTime('');
                   }}
                 />
@@ -540,8 +579,8 @@ function App() {
 
                 <select
                   value={editResource}
-                  onChange={(e) => {
-                    setEditResource(e.target.value);
+                  onChange={(event) => {
+                    setEditResource(event.target.value);
                     setEditStartTime('');
                   }}
                 >
@@ -565,8 +604,8 @@ function App() {
                   min="1"
                   max={editingCapacity}
                   value={editParticipantCount}
-                  onChange={(e) =>
-                    setEditParticipantCount(e.target.value)
+                  onChange={(event) =>
+                    setEditParticipantCount(event.target.value)
                   }
                 />
 
@@ -574,7 +613,9 @@ function App() {
 
                 <select
                   value={editStartTime}
-                  onChange={(e) => setEditStartTime(e.target.value)}
+                  onChange={(event) =>
+                    setEditStartTime(event.target.value)
+                  }
                 >
                   <option value="">Изберете час</option>
 
