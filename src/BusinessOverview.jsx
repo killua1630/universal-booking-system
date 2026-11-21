@@ -117,7 +117,7 @@ function BusinessOverview({ businessKey, business, reservations, date }) {
       0
     );
 
-    const capacityUsage =
+    const averageCapacityUsage =
       totalReservedCapacity > 0
         ? Math.round(
             (totalParticipants / totalReservedCapacity) * 100
@@ -130,7 +130,7 @@ function BusinessOverview({ businessKey, business, reservations, date }) {
       totalOccupiedSlots,
       totalAvailableSlots,
       totalSlots,
-      capacityUsage,
+      averageCapacityUsage,
       resourceStatistics,
     };
   }, [businessKey, business, reservations, date]);
@@ -172,8 +172,8 @@ function BusinessOverview({ businessKey, business, reservations, date }) {
         </p>
 
         <p>
-          Използване на капацитета при активните резервации:{' '}
-          <strong>{overview.capacityUsage}%</strong>
+          Средно запълване на капацитета при активните резервации:{' '}
+          <strong>{overview.averageCapacityUsage}%</strong>
         </p>
       </div>
 
