@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { businessData } from './data/businessData';
 import { initialReservations } from './data/reservations';
+import { generateAvailableSlots } from './utils/availability';
 import './App.css';
 
 function App() {
@@ -11,19 +12,26 @@ function App() {
 
   const currentBusiness = businessData[selectedBusiness];
 
+  function handleBusinessChange(business) {
+    setSelectedBusiness(business);
+    setSelectedResource(String(businessData[business].resources[0].id));
+  }
+
   const filteredReservations = initialReservations.filter(
     (reservation) =>
       reservation.businessType === selectedBusiness &&
       reservation.date === selectedDate &&
-      reservation.status === 'active' &&
-      (selectedResource === '' ||
-        reservation.resourceId === Number(selectedResource))
+      reservation.resourceId === Number(selectedResource) &&
+      reservation.status === 'active'
   );
 
-  function handleBusinessChange(business) {
-    setSelectedBusiness(business);
-    setSelectedResource('');
-  }
+  const availableSlots = currentBusiness && selectedResource
+    ? generateAvailableSlots(
+        currentBusiness.workingHours,
+        currentBusiness.slotDuration,
+        filteredReservations
+      )
+    : [];
 
   return (
     <div className="app">
@@ -75,14 +83,31 @@ function App() {
               value={selectedResource}
               onChange={(e) => setSelectedResource(e.target.value)}
             >
-              <option value="">Всички ресурси</option>
-
               {currentBusiness.resources.map((resource) => (
                 <option key={resource.id} value={resource.id}>
                   {resource.name}
                 </option>
               ))}
             </select>
+
+            <h3>Свободни часове:</h3>
+
+            <div className="slots-list">
+              {availableSlots.map((slot) => (
+                <div
+                  key={slot.startTime}
+                  className={`slot ${slot.available ? 'available' : 'occupied'}`}
+                >
+                  <span>
+                    {slot.startTime} - {slot.endTime}
+                  </span>
+
+                  <strong>
+                    {slot.available ? 'Свободно' : 'Заето'}
+                  </strong>
+                </div>
+              ))}
+            </div>
 
             <h3>Съществуващи резервации:</h3>
 
