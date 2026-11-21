@@ -1,15 +1,88 @@
 
+.app {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+header h1 {
+  font-size: 32px;
+  margin-bottom: 10px;
+}
+
+header p {
+  color: #666;
+  font-size: 18px;
+}
+
+.business-options {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.business-options button {
+  padding: 18px 25px;
+  border: none;
+  border-radius: 8px;
+  background-color: #2563eb;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.business-options button:hover {
+  background-color: #1d4ed8;
+}
+
+.selected-business {
+  margin-top: 30px;
+}
+
+.selected-business h2 {
+  margin-bottom: 20px;
+}
+
+.selected-business h3 {
+  margin-top: 25px;
+  margin-bottom: 12px;
+}
+
+.selected-business input,
+.selected-business select {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 15px;
+}
+
+.selected-business ul {
+  margin-top: 10px;
+  padding-left: 25px;
+}
+
+.selected-business li {
+  margin-bottom: 12px;
+}
+
 .slots-list {
   display: flex;
   flex-direction: column;
   gap: 10px;
   margin-top: 15px;
-  max-width: 400px;
+  max-width: 430px;
 }
 
 .slot {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   padding: 12px;
   border-radius: 6px;
   border: 1px solid #ddd;
@@ -23,4 +96,94 @@
 .occupied {
   background-color: #fee2e2;
   color: #991b1b;
+}
+
+.slot button {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 5px;
+  background-color: #2563eb;
+  color: white;
+  cursor: pointer;
+}
+
+.slot button:hover {
+  background-color: #1d4ed8;
+}
+
+.booking-message {
+  margin-top: 15px;
+  font-weight: bold;
+  color: #166534;
+}
+
+.cancel-button,
+.edit-button {
+  margin-left: 10px;
+  padding: 6px 10px;
+  border: none;
+  border-radius: 5px;
+  color: white;
+  cursor: pointer;
+}
+
+.cancel-button {
+  background-color: #dc2626;
+}
+
+.cancel-button:hover {
+  background-color: #b91c1c;
+}
+
+.edit-button {
+  background-color: #2563eb;
+}
+
+.edit-button:hover {
+  background-color: #1d4ed8;
+}
+
+.edit-form {
+  margin-top: 30px;
+  padding: 20px;
+  max-width: 450px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: white;
+}
+
+.edit-form h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
+}
+
+.edit-form label {
+  display: block;
+  margin-top: 15px;
+  margin-bottom: 6px;
+}
+
+.edit-form input,
+.edit-form select {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.edit-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.edit-actions button {
+  padding: 10px 14px;
+  border: none;
+  border-radius: 5px;
+  background-color: #2563eb;
+  color: white;
+  cursor: pointer;
+}
+
+.edit-actions .cancel-edit-button {
+  background-color: #6b7280;
 }
