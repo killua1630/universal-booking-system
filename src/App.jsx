@@ -1,16 +1,69 @@
 
-import { useState } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { businessData } from './data/businessData';
 import { initialReservations } from './data/reservations';
 import { generateAvailableSlots } from './utils/availability';
 import './App.css';
+
+// Връща днешната дата в локален формат
+function getTodayLocalDate() {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const day = String(today.getDate()).padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
+}
+
+// Проверява дали даден час вече е минал
+function isSlotInPast(date, startTime) {
+  const today = getTodayLocalDate();
+
+  if (date < today) {
+    return true;
+  }
+
+  if (date > today) {
+    return false;
+  }
+
+  const now = new Date();
+  const currentMinutes =
+    now.getHours() * 60 + now.getMinutes();
+
+  const [hours, minutes] = startTime.split(':').map(Number);
+  const slotStartMinutes = hours * 60 + minutes;
+
+  return slotStartMinutes <= currentMinutes;
+}
 
 function App() {
   const [selectedBusiness, setSelectedBusiness] = useState('');
   const [selectedDate, setSelectedDate] = useState('2026-11-23');
   const [selectedResource, setSelectedResource] = useState('');
   const [customerName, setCustomerName] = useState('');
-  const [reservations, setReservations] = useState(initialReservations);
+
+  // Зареждане на резервациите от localStorage
+  const [reservations, setReservations] = useState(() => {
+    try {
+      const savedReservations = localStorage.getItem(
+        'booking-system-reservations'
+      );
+
+      if (savedReservations !== null) {
+        const parsedReservations = JSON.parse(savedReservations);
+
+        if (Array.isArray(parsedReservations)) {
+          return parsedReservations;
+        }
+      }
+    } catch (error) {
+      console.error('Грешка при зареждане:', error);
+    }
+
+    return initialReservations;
+  });
+
   const [message, setMessage] = useState('');
 
   const [editingId, setEditingId] = useState(null);
@@ -18,6 +71,18 @@ function App() {
   const [editDate, setEditDate] = useState('');
   const [editResource, setEditResource] = useState('');
   const [editStartTime, setEditStartTime] = useState('');
+
+  // Автоматично запазване на резервациите
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        'booking-system-reservations',
+        JSON.stringify(reservations)
+      );
+    } catch (error) {
+      console.error('Грешка при запазване:', error);
+    }
+  }, [reservations]);
 
   const currentBusiness = businessData[selectedBusiness];
 
@@ -30,31 +95,58 @@ function App() {
     setEditingId(null);
   }
 
-  const filteredReservations = reservations.filter(
-    (reservation) =>
-      reservation.businessType === selectedBusiness &&
-      reservation.date === selectedDate &&
-      reservation.resourceId === Number(selectedResource) &&
-      reservation.status === 'active'
-  );
+  // Филтриране на активните резервации
+  const filteredReservations = useMemo(() => {
+    return reservations.filter(
+      (reservation) =>
+        reservation.businessType === selectedBusiness &&
+        reservation.date === selectedDate &&
+        reservation.resourceId === Number(selectedResource) &&
+        reservation.status === 'active'
+    );
+  }, [
+    reservations,
+    selectedBusiness,
+    selectedDate,
+    selectedResource,
+  ]);
 
-  const availableSlots =
-    currentBusiness && selectedResource
-      ? generateAvailableSlots(
-          currentBusiness.workingHours,
-          currentBusiness.slotDuration,
-          filteredReservations
-        )
-      : [];
+  // Генериране на свободните часове
+  const availableSlots = useMemo(() => {
+    if (!currentBusiness || !selectedResource) {
+      return [];
+    }
+
+    return generateAvailableSlots(
+      currentBusiness.workingHours,
+      currentBusiness.slotDuration,
+      filteredReservations
+    );
+  }, [
+    currentBusiness,
+    selectedResource,
+    filteredReservations,
+  ]);
 
   function timeToMinutes(time) {
     const [hours, minutes] = time.split(':').map(Number);
     return hours * 60 + minutes;
   }
 
+  // Създаване на резервация
   function handleBooking(slot) {
     if (!customerName.trim()) {
       setMessage('Моля, въведете име на клиента.');
+      return;
+    }
+
+    if (selectedDate < getTodayLocalDate()) {
+      setMessage('Не можете да резервирате за минала дата.');
+      return;
+    }
+
+    if (isSlotInPast(selectedDate, slot.startTime)) {
+      setMessage('Не можете да резервирате час, който вече е минал.');
       return;
     }
 
@@ -92,6 +184,7 @@ function App() {
     setMessage('Резервацията е създадена успешно!');
   }
 
+  // Отказване на резервация
   function handleCancel(reservationId) {
     setReservations((previous) =>
       previous.map((reservation) =>
@@ -108,6 +201,7 @@ function App() {
     setMessage('Резервацията е отказана успешно!');
   }
 
+  // Започване на редактиране
   function handleEdit(reservation) {
     setEditingId(reservation.id);
     setEditName(reservation.customerName);
@@ -117,27 +211,51 @@ function App() {
     setMessage('');
   }
 
-  const editingReservations = reservations.filter(
-    (reservation) =>
-      reservation.id !== editingId &&
-      reservation.businessType === selectedBusiness &&
-      reservation.date === editDate &&
-      reservation.resourceId === Number(editResource) &&
-      reservation.status === 'active'
-  );
+  // Филтриране на резервациите при редактиране
+  const editingReservations = useMemo(() => {
+    return reservations.filter(
+      (reservation) =>
+        reservation.id !== editingId &&
+        reservation.businessType === selectedBusiness &&
+        reservation.date === editDate &&
+        reservation.resourceId === Number(editResource) &&
+        reservation.status === 'active'
+    );
+  }, [
+    reservations,
+    editingId,
+    selectedBusiness,
+    editDate,
+    editResource,
+  ]);
 
-  const editingSlots =
-    currentBusiness && editDate && editResource
-      ? generateAvailableSlots(
-          currentBusiness.workingHours,
-          currentBusiness.slotDuration,
-          editingReservations
-        )
-      : [];
+  // Генериране на свободните часове при редактиране
+  const editingSlots = useMemo(() => {
+    if (!currentBusiness || !editDate || !editResource) {
+      return [];
+    }
 
+    return generateAvailableSlots(
+      currentBusiness.workingHours,
+      currentBusiness.slotDuration,
+      editingReservations
+    );
+  }, [
+    currentBusiness,
+    editDate,
+    editResource,
+    editingReservations,
+  ]);
+
+  // Запазване на редактирана резервация
   function handleSaveEdit() {
     if (!editName.trim()) {
       setMessage('Моля, въведете име на клиента.');
+      return;
+    }
+
+    if (editDate < getTodayLocalDate()) {
+      setMessage('Не можете да преместите резервация на минала дата.');
       return;
     }
 
@@ -149,6 +267,11 @@ function App() {
 
     if (!selectedSlot) {
       setMessage('Изберете свободен час за резервацията.');
+      return;
+    }
+
+    if (isSlotInPast(editDate, selectedSlot.startTime)) {
+      setMessage('Не можете да изберете час, който вече е минал.');
       return;
     }
 
@@ -167,7 +290,6 @@ function App() {
       )
     );
 
-    // Обновяваме главния екран с новите дата и ресурс.
     setSelectedDate(editDate);
     setSelectedResource(editResource);
 
@@ -215,6 +337,7 @@ function App() {
 
             <input
               type="date"
+              min={getTodayLocalDate()}
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
             />
@@ -255,12 +378,15 @@ function App() {
                     {slot.startTime} - {slot.endTime}
                   </span>
 
-                  {slot.available ? (
+                  {slot.available &&
+                  !isSlotInPast(selectedDate, slot.startTime) ? (
                     <button onClick={() => handleBooking(slot)}>
                       Резервирай
                     </button>
                   ) : (
-                    <strong>Заето</strong>
+                    <strong>
+                      {slot.available ? 'Минал час' : 'Заето'}
+                    </strong>
                   )}
                 </div>
               ))}
@@ -317,6 +443,7 @@ function App() {
 
                 <input
                   type="date"
+                  min={getTodayLocalDate()}
                   value={editDate}
                   onChange={(e) => {
                     setEditDate(e.target.value);
@@ -349,7 +476,11 @@ function App() {
                   <option value="">Изберете час</option>
 
                   {editingSlots
-                    .filter((slot) => slot.available)
+                    .filter(
+                      (slot) =>
+                        slot.available &&
+                        !isSlotInPast(editDate, slot.startTime)
+                    )
                     .map((slot) => (
                       <option key={slot.startTime} value={slot.startTime}>
                         {slot.startTime} - {slot.endTime}

@@ -24,7 +24,16 @@ export function generateAvailableSlots(
   const startMinutes = timeToMinutes(workingHours.start);
   const endMinutes = timeToMinutes(workingHours.end);
 
+  // Преобразуваме резервациите в числови интервали само веднъж.
+  const sortedReservations = reservations
+    .map((reservation) => ({
+      start: timeToMinutes(reservation.startTime),
+      end: timeToMinutes(reservation.endTime),
+    }))
+    .sort((a, b) => a.start - b.start);
+
   const slots = [];
+  let reservationIndex = 0;
 
   for (
     let start = startMinutes;
@@ -33,12 +42,19 @@ export function generateAvailableSlots(
   ) {
     const end = start + slotDuration;
 
-    const isAvailable = !reservations.some((reservation) => {
-      const reservationStart = timeToMinutes(reservation.startTime);
-      const reservationEnd = timeToMinutes(reservation.endTime);
+    // Пропускаме резервациите, които вече са приключили.
+    while (
+      reservationIndex < sortedReservations.length &&
+      sortedReservations[reservationIndex].end <= start
+    ) {
+      reservationIndex++;
+    }
 
-      return start < reservationEnd && end > reservationStart;
-    });
+    // Проверяваме дали следващата резервация се припокрива.
+    const nextReservation = sortedReservations[reservationIndex];
+
+    const isAvailable =
+      !nextReservation || nextReservation.start >= end;
 
     slots.push({
       startTime: minutesToTime(start),
