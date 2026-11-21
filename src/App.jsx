@@ -42,6 +42,7 @@ function App() {
   const [selectedDate, setSelectedDate] = useState('2026-11-23');
   const [selectedResource, setSelectedResource] = useState('');
   const [customerName, setCustomerName] = useState('');
+  const [participantCount, setParticipantCount] = useState('1');
 
   // Зареждане на резервациите от localStorage
   const [reservations, setReservations] = useState(() => {
@@ -71,6 +72,7 @@ function App() {
   const [editDate, setEditDate] = useState('');
   const [editResource, setEditResource] = useState('');
   const [editStartTime, setEditStartTime] = useState('');
+  const [editParticipantCount, setEditParticipantCount] = useState('1');
 
   // Автоматично запазване на резервациите
   useEffect(() => {
@@ -86,11 +88,27 @@ function App() {
 
   const currentBusiness = businessData[selectedBusiness];
 
+  // Намиране на избрания ресурс
+  const currentResource = currentBusiness?.resources.find(
+    (resource) => resource.id === Number(selectedResource)
+  );
+
+  // Капацитет на избрания ресурс
+  const currentCapacity = currentResource?.capacity ?? 1;
+
+  // Намиране на ресурса при редактиране
+  const editingResource = currentBusiness?.resources.find(
+    (resource) => resource.id === Number(editResource)
+  );
+
+  const editingCapacity = editingResource?.capacity ?? 1;
+
   function handleBusinessChange(business) {
     setSelectedBusiness(business);
     setSelectedResource(
       String(businessData[business].resources[0].id)
     );
+    setParticipantCount('1');
     setMessage('');
     setEditingId(null);
   }
@@ -135,8 +153,25 @@ function App() {
 
   // Създаване на резервация
   function handleBooking(slot) {
+    const numberOfParticipants = Number(participantCount);
+
     if (!customerName.trim()) {
       setMessage('Моля, въведете име на клиента.');
+      return;
+    }
+
+    if (
+      !Number.isInteger(numberOfParticipants) ||
+      numberOfParticipants < 1
+    ) {
+      setMessage('Броят участници трябва да бъде поне 1.');
+      return;
+    }
+
+    if (numberOfParticipants > currentCapacity) {
+      setMessage(
+        `Капацитетът на този ресурс е ${currentCapacity} участник(а).`
+      );
       return;
     }
 
@@ -172,6 +207,7 @@ function App() {
       startTime: slot.startTime,
       endTime: slot.endTime,
       customerName: customerName.trim(),
+      participantCount: numberOfParticipants,
       status: 'active',
     };
 
@@ -181,6 +217,7 @@ function App() {
     ]);
 
     setCustomerName('');
+    setParticipantCount('1');
     setMessage('Резервацията е създадена успешно!');
   }
 
@@ -208,6 +245,9 @@ function App() {
     setEditDate(reservation.date);
     setEditResource(String(reservation.resourceId));
     setEditStartTime(reservation.startTime);
+    setEditParticipantCount(
+      String(reservation.participantCount ?? 1)
+    );
     setMessage('');
   }
 
@@ -249,8 +289,25 @@ function App() {
 
   // Запазване на редактирана резервация
   function handleSaveEdit() {
+    const numberOfParticipants = Number(editParticipantCount);
+
     if (!editName.trim()) {
       setMessage('Моля, въведете име на клиента.');
+      return;
+    }
+
+    if (
+      !Number.isInteger(numberOfParticipants) ||
+      numberOfParticipants < 1
+    ) {
+      setMessage('Броят участници трябва да бъде поне 1.');
+      return;
+    }
+
+    if (numberOfParticipants > editingCapacity) {
+      setMessage(
+        `Капацитетът на този ресурс е ${editingCapacity} участник(а).`
+      );
       return;
     }
 
@@ -285,6 +342,7 @@ function App() {
               resourceId: Number(editResource),
               startTime: selectedSlot.startTime,
               endTime: selectedSlot.endTime,
+              participantCount: numberOfParticipants,
             }
           : reservation
       )
@@ -346,7 +404,10 @@ function App() {
 
             <select
               value={selectedResource}
-              onChange={(e) => setSelectedResource(e.target.value)}
+              onChange={(e) => {
+                setSelectedResource(e.target.value);
+                setParticipantCount('1');
+              }}
             >
               {currentBusiness.resources.map((resource) => (
                 <option key={resource.id} value={resource.id}>
@@ -354,6 +415,12 @@ function App() {
                 </option>
               ))}
             </select>
+
+            <p>
+              Капацитет на избрания ресурс:{' '}
+              <strong>{currentCapacity}</strong>
+              {currentCapacity === 1 ? ' клиент' : ' души'}
+            </p>
 
             <h3>Име на клиента:</h3>
 
@@ -363,6 +430,20 @@ function App() {
               value={customerName}
               onChange={(e) => setCustomerName(e.target.value)}
             />
+
+            <h3>Брой участници:</h3>
+
+            <input
+              type="number"
+              min="1"
+              max={currentCapacity}
+              value={participantCount}
+              onChange={(e) => setParticipantCount(e.target.value)}
+            />
+
+            <p>
+              Максимален брой участници: {currentCapacity}
+            </p>
 
             <h3>Свободни часове:</h3>
 
@@ -404,6 +485,10 @@ function App() {
                   <li key={reservation.id}>
                     {reservation.customerName} -{' '}
                     {reservation.startTime} до {reservation.endTime}
+                    {' '}({reservation.participantCount ?? 1}{' '}
+                    {(reservation.participantCount ?? 1) === 1
+                      ? 'участник'
+                      : 'участници'})
 
                     <button
                       className="edit-button"
@@ -466,6 +551,24 @@ function App() {
                     </option>
                   ))}
                 </select>
+
+                <p>
+                  Капацитет на избрания ресурс:{' '}
+                  <strong>{editingCapacity}</strong>
+                  {editingCapacity === 1 ? ' клиент' : ' души'}
+                </p>
+
+                <label>Брой участници:</label>
+
+                <input
+                  type="number"
+                  min="1"
+                  max={editingCapacity}
+                  value={editParticipantCount}
+                  onChange={(e) =>
+                    setEditParticipantCount(e.target.value)
+                  }
+                />
 
                 <label>Свободен час:</label>
 

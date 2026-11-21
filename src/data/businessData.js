@@ -8,8 +8,8 @@ export const businessData = {
     },
     slotDuration: 30,
     resources: [
-      { id: 1, name: 'Д-р Иванов' },
-      { id: 2, name: 'Д-р Петрова' },
+      { id: 1, name: 'Д-р Иванов', capacity: 1 },
+      { id: 2, name: 'Д-р Петрова', capacity: 1 },
     ],
   },
 
@@ -21,8 +21,8 @@ export const businessData = {
     },
     slotDuration: 60,
     resources: [
-      { id: 1, name: 'Мария - фризьор' },
-      { id: 2, name: 'Георги - фризьор' },
+      { id: 1, name: 'Мария - фризьор', capacity: 1 },
+      { id: 2, name: 'Георги - фризьор', capacity: 1 },
     ],
   },
 
@@ -34,9 +34,9 @@ export const businessData = {
     },
     slotDuration: 60,
     resources: [
-      { id: 1, name: 'Зала 1' },
-      { id: 2, name: 'Зала 2' },
-      { id: 3, name: 'Зала 3' },
+      { id: 1, name: 'Зала 1', capacity: 20 },
+      { id: 2, name: 'Зала 2', capacity: 30 },
+      { id: 3, name: 'Зала 3', capacity: 50 },
     ],
   },
 };
