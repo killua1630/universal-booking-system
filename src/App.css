@@ -1,8 +1,8 @@
-
 .app {
   max-width: 1000px;
   margin: 0 auto;
   padding: 40px 20px;
+  position: relative;
 }
 
 header {
@@ -18,6 +18,27 @@ header h1 {
 header p {
   color: #666;
   font-size: 18px;
+}
+
+/* Бутон за смяна на темата */
+
+.theme-toggle {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  background-color: #2563eb;
+  color: white;
+  font-size: 14px;
+  cursor: pointer;
+  z-index: 9999;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.theme-toggle:hover {
+  background-color: #1d4ed8;
 }
 
 .business-options {
@@ -282,29 +303,6 @@ header p {
   color: #166534;
 }
 
-@media (max-width: 600px) {
-  .app {
-    padding: 20px 12px;
-  }
-
-  .business-settings {
-    padding: 15px;
-  }
-
-  .resource-settings-row {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .business-options {
-    flex-direction: column;
-  }
-
-  .business-options button {
-    width: 100%;
-  }
-}
-
 /* Табло за статистика и заетост */
 
 .business-overview {
@@ -382,6 +380,36 @@ header p {
   margin: 8px 0;
 }
 
+/* Адаптация за по-малки екрани */
+
+@media (max-width: 600px) {
+  .app {
+    padding: 60px 12px 20px;
+  }
+
+  .theme-toggle {
+    top: 10px;
+    right: 12px;
+  }
+
+  .business-settings {
+    padding: 15px;
+  }
+
+  .resource-settings-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .business-options {
+    flex-direction: column;
+  }
+
+  .business-options button {
+    width: 100%;
+  }
+}
+
 @media (max-width: 650px) {
   .overview-cards {
     grid-template-columns: repeat(2, minmax(120px, 1fr));
@@ -392,3 +420,77 @@ header p {
   }
 }
 
+/* Цветове за тъмната тема */
+
+:root[data-theme="dark"] body {
+  background-color: #111827;
+  color: #f3f4f6;
+}
+
+:root[data-theme="dark"] .app {
+  color: #f3f4f6;
+}
+
+:root[data-theme="dark"] header p,
+:root[data-theme="dark"] .overview-date,
+:root[data-theme="dark"] .overview-card span {
+  color: #cbd5e1;
+}
+
+:root[data-theme="dark"] .edit-form,
+:root[data-theme="dark"] .business-settings,
+:root[data-theme="dark"] .business-overview,
+:root[data-theme="dark"] .resource-settings-item,
+:root[data-theme="dark"] .overview-card,
+:root[data-theme="dark"] .overview-total,
+:root[data-theme="dark"] .resource-statistics-card {
+  background-color: #1f2937;
+  color: #f3f4f6;
+  border-color: #4b5563;
+}
+
+:root[data-theme="dark"] .selected-business input,
+:root[data-theme="dark"] .selected-business select,
+:root[data-theme="dark"] .edit-form input,
+:root[data-theme="dark"] .edit-form select,
+:root[data-theme="dark"] .resource-edit-fields input,
+:root[data-theme="dark"] .settings-form input {
+  background-color: #374151;
+  color: #f9fafb;
+  border-color: #6b7280;
+}
+
+:root[data-theme="dark"] input::placeholder {
+  color: #cbd5e1;
+}
+
+:root[data-theme="dark"] .slot {
+  border-color: #4b5563;
+}
+
+:root[data-theme="dark"] .available {
+  background-color: #14532d;
+  color: #dcfce7;
+}
+
+:root[data-theme="dark"] .occupied {
+  background-color: #7f1d1d;
+  color: #fee2e2;
+}
+
+:root[data-theme="dark"] .overview-total {
+  background-color: #374151;
+}
+
+:root[data-theme="dark"] .overview-card span {
+  color: #cbd5e1;
+}
+
+:root[data-theme="dark"] .overview-card strong {
+  color: #60a5fa;
+}
+
+:root[data-theme="dark"] .booking-message,
+:root[data-theme="dark"] .settings-message {
+  color: #86efac;
+}

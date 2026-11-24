@@ -30,6 +30,23 @@ function isSlotInPast(date, startTime) {
 
 function App() {
   const [selectedBusiness, setSelectedBusiness] = useState('');
+
+  // Зареждане и запазване на избраната тема
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem('booking-system-theme') || 'light';
+  });
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('booking-system-theme', theme);
+  }, [theme]);
+
+  function toggleTheme() {
+    setTheme((previousTheme) =>
+      previousTheme === 'light' ? 'dark' : 'light'
+    );
+  }
+
   const [selectedDate, setSelectedDate] = useState('2026-11-23');
   const [selectedResource, setSelectedResource] = useState('');
   const [customerName, setCustomerName] = useState('');
@@ -387,7 +404,11 @@ function App() {
   }
 
   return (
-    <div className="app">
+    <div className={`app theme-${theme}`}>
+      <button className="theme-toggle" onClick={toggleTheme}>
+        {theme === 'light' ? '🌙 Тъмна тема' : '☀️ Светла тема'}
+      </button>
+
       <header>
         <h1>Универсална система за резервации</h1>
         <p>Изберете тип бизнес</p>
